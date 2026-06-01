@@ -1,0 +1,133 @@
+{
+	"name": "copy_data",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup_tablenames",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SELECT \nt.name AS tableName,\ns.name AS schemaName\nFROM sys.tables t\nINNER JOIN sys.schemas s\n\tON t.schema_id=s.schema_id\nWHERE s.name= 'SalesLT';\n",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_LookUp_SqlServerTable",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach_table_copy_loop",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup_tablenames",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup_tablenames').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Copy data1",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlServerSource",
+									"sqlReaderQuery": {
+										"value": "@concat('SELECT * FROM ',item().schemaName,'.', item().tableName,';' )",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings",
+										"copyBehavior": "PreserveHierarchy"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_SqlServerTable",
+									"type": "DatasetReference",
+									"parameters": {
+										"tableName": {
+											"value": "@item().tableName",
+											"type": "Expression"
+										},
+										"schemaName": {
+											"value": "@item().schemaName",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_Parquet",
+									"type": "DatasetReference",
+									"parameters": {
+										"tableName": {
+											"value": "@item().tableName",
+											"type": "Expression"
+										},
+										"schemaName": {
+											"value": "@item().schemaName",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2026-05-31T13:45:47Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

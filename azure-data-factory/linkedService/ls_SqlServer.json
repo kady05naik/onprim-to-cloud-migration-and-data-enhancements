@@ -1,0 +1,29 @@
+{
+	"name": "ls_SqlServer",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"server": "vm-sql",
+			"database": "AdventureWorksLT2022",
+			"encrypt": "optional",
+			"trustServerCertificate": true,
+			"authenticationType": "SQL",
+			"userName": "adminkad",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "ls_AzureKeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "sqlpassword",
+				"secretVersion": "d6641364c99f42839edf7ef941593a94"
+			}
+		},
+		"connectVia": {
+			"referenceName": "integrationRuntime1",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

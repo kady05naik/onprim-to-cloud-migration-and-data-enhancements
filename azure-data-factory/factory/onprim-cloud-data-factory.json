@@ -1,0 +1,15 @@
+{
+	"name": "onprim-cloud-data-factory",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "eastasia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "86be1d39-d9a5-4e6f-a9fb-fbb80af48d64",
+		"tenantId": "c2179543-697d-493f-b2a8-9ee9abe38ae1"
+	}
+}

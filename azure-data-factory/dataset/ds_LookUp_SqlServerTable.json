@@ -1,0 +1,13 @@
+{
+	"name": "ds_LookUp_SqlServerTable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_SqlServer",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
