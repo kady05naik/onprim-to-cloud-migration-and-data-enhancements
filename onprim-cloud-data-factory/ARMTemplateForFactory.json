@@ -227,7 +227,7 @@
 							"value": "@concat(dataset().schemaName,'/',dataset().tableName)",
 							"type": "Expression"
 						},
-						"fileSystem": "bronze"
+						"fileSystem": "landing"
 					},
 					"compressionCodec": "snappy"
 				},
