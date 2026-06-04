@@ -1,0 +1,12 @@
+{
+	"name": "ls_AzureSynapseArtifacts",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSynapseArtifacts",
+		"typeProperties": {
+			"endpoint": "https://onprimpro-ws.dev.azuresynapse.net",
+			"authentication": "MSI",
+			"workspaceResourceId": "/subscriptions/b1af0ca5-d37b-422d-bd5b-ca4f76a426fd/resourceGroups/onprimpro/providers/Microsoft.Synapse/workspaces/onprimpro-ws"
+		}
+	}
+}
