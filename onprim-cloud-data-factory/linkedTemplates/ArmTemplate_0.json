@@ -19,6 +19,10 @@
 			"type": "string",
 			"defaultValue": "https://onprimtocloudstorgaeacc.dfs.core.windows.net/"
 		},
+		"ls_AzureDatabricks_properties_typeProperties_existingClusterId": {
+			"type": "string",
+			"defaultValue": "0524-105547-xwu1tcbm"
+		},
 		"ls_SqlServer_properties_typeProperties_server": {
 			"type": "string",
 			"defaultValue": "vm-sql"
@@ -77,6 +81,18 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_Parquet')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -114,6 +130,31 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_adls_gen2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_AzureDatabricks')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricks",
+				"typeProperties": {
+					"domain": "https://adb-7405618524311363.3.azuredatabricks.net",
+					"accessToken": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "ls_AzureKeyVault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "databricksAccessToken",
+						"secretVersion": "b7af098a2d004c99b8ce4ba3a8b6e8fb"
+					},
+					"existingClusterId": "[parameters('ls_AzureDatabricks_properties_typeProperties_existingClusterId')]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_AzureKeyVault')]"
 			]
 		},
 		{
@@ -210,7 +251,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Lookup_tablenames",
+						"name": "Lookup Table Names",
 						"type": "Lookup",
 						"dependsOn": [],
 						"policy": {
@@ -237,11 +278,11 @@
 						}
 					},
 					{
-						"name": "ForEach_table_copy_loop",
+						"name": "ForEach",
 						"type": "ForEach",
 						"dependsOn": [
 							{
-								"activity": "Lookup_tablenames",
+								"activity": "Lookup Table Names",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -250,13 +291,13 @@
 						"userProperties": [],
 						"typeProperties": {
 							"items": {
-								"value": "@activity('Lookup_tablenames').output.value",
+								"value": "@activity('Lookup Table Names').output.value",
 								"type": "Expression"
 							},
 							"isSequential": true,
 							"activities": [
 								{
-									"name": "Copy data1",
+									"name": "Copy tables to adls gen2",
 									"type": "Copy",
 									"dependsOn": [],
 									"policy": {
@@ -332,6 +373,87 @@
 								}
 							]
 						}
+					},
+					{
+						"name": "landing to bronze",
+						"type": "DatabricksNotebook",
+						"dependsOn": [
+							{
+								"activity": "ForEach",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Users/kadn95634@gmail.com/onprim-to-cloud-migration-and-data-enhancements/databricks/02. Landing to Bronze Extended"
+						},
+						"linkedServiceName": {
+							"referenceName": "ls_AzureDatabricks",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "bronze to silver",
+						"type": "DatabricksNotebook",
+						"dependsOn": [
+							{
+								"activity": "landing to bronze",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Users/kadn95634@gmail.com/onprim-to-cloud-migration-and-data-enhancements/databricks/03. Bronze to SIlver"
+						},
+						"linkedServiceName": {
+							"referenceName": "ls_AzureDatabricks",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "silver to gold",
+						"type": "DatabricksNotebook",
+						"dependsOn": [
+							{
+								"activity": "bronze to silver",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Users/kadn95634@gmail.com/onprim-to-cloud-migration-and-data-enhancements/databricks/04. Silver to Gold"
+						},
+						"linkedServiceName": {
+							"referenceName": "ls_AzureDatabricks",
+							"type": "LinkedServiceReference"
+						}
 					}
 				],
 				"policy": {
@@ -342,6 +464,7 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ds_LookUp_SqlServerTable')]",
+				"[concat(variables('factoryId'), '/linkedServices/ls_AzureDatabricks')]",
 				"[concat(variables('factoryId'), '/datasets/ds_SqlServerTable')]",
 				"[concat(variables('factoryId'), '/datasets/ds_Parquet')]"
 			]

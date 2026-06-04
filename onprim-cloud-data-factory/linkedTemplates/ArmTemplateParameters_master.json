@@ -8,6 +8,9 @@
 		"ls_adls_gen2_accountKey": {
 			"value": ""
 		},
+		"ls_AzureDatabricks_properties_typeProperties_existingClusterId": {
+			"value": "0524-105547-xwu1tcbm"
+		},
 		"ls_AzureKeyVault_properties_typeProperties_baseUrl": {
 			"value": "https://keyvaultonprimpro.vault.azure.net/"
 		},
