@@ -19,6 +19,10 @@
 			"type": "string",
 			"defaultValue": "https://keyvaultonprimpro.vault.azure.net/"
 		},
+		"ls_AzureSynapseArtifacts_properties_typeProperties_endpoint": {
+			"type": "string",
+			"defaultValue": "https://onprimpro-ws.dev.azuresynapse.net"
+		},
 		"ls_SqlServer_properties_typeProperties_server": {
 			"type": "string",
 			"defaultValue": "vm-sql"
@@ -67,6 +71,9 @@
 					},
 					"ls_AzureKeyVault_properties_typeProperties_baseUrl": {
 						"value": "[parameters('ls_AzureKeyVault_properties_typeProperties_baseUrl')]"
+					},
+					"ls_AzureSynapseArtifacts_properties_typeProperties_endpoint": {
+						"value": "[parameters('ls_AzureSynapseArtifacts_properties_typeProperties_endpoint')]"
 					},
 					"ls_adls_gen2_properties_typeProperties_url": {
 						"value": "[parameters('ls_adls_gen2_properties_typeProperties_url')]"

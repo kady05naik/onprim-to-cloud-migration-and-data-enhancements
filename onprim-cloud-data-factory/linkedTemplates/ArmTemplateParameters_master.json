@@ -14,6 +14,9 @@
 		"ls_AzureKeyVault_properties_typeProperties_baseUrl": {
 			"value": "https://keyvaultonprimpro.vault.azure.net/"
 		},
+		"ls_AzureSynapseArtifacts_properties_typeProperties_endpoint": {
+			"value": "https://onprimpro-ws.dev.azuresynapse.net"
+		},
 		"ls_SqlServer_properties_typeProperties_server": {
 			"value": "vm-sql"
 		},
